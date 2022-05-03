@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="47642937813-mjquomc174n0f4g7h63kum6j0na237ai.apps.googleusercontent.com">
+    <title>login</title>
+<link rel="stylesheet" href="../public/css/register.css" type="text/css">
+</head>
+<body>
+    <div class="login-form">
+        <h1>login_user</h1>
+        <form action="/api/v1/auth/login" method="post" >
+        <!-- <form action="/login" method="post" > -->
+            
+            <div class="g-signin2" data-onsuccess="onSignIn"></div>
+
+            <fb:login-button 
+            scope="public_profile,email" 
+            onlogin="checkLoginState();">
+            </fb:login-button>
+
+            <div class="input-area">
+            <label for="email">email</label>
+            <input type="email" id="email" name="email" required 
+            placeholder="enter email" 
+            value="<%= typeof email != 'undefined' ? email : '' %>">
+        </div>
+        
+        <div class="input-area">
+            <label for="password">password</label>
+            <input type="password" id="password" name="password" required 
+            placeholder="enter password"
+            value="<%= typeof password != 'undefined' ? password : '' %>">
+        </div>
+        <%- include('./massage') %>
+        <span id="error_span" ></span>
+            <input type="submit" value="submit" class="submit">
+
+            <!-- <a href="#" onclick="signOut();">Sign out</a> -->
+
+            <!-- <button class="fb-logout" onclick="Fb_logout();">fb-logout</button> -->
+
+
+        </form>
+           
+        <p>don't have account? Create <a href="/register">here</a></p>
+    </div>
+    <script>
+        // const loginButton = document.querySelector('.g-signin2').addEventListener('click', onSignIn);
+ 
+         function onSignIn(googleUser) {
+          //  console.log(googleUser)
+    // var profile = googleUser.getBasicProfile();
+    //var profile = {googleUser}
+   //console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+  //  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+  //  console.log('Name: ' + profile.getName());
+  //  console.log('Image URL: ' + profile.getImageUrl());
+  //  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+  var id_token = googleUser.getAuthResponse().id_token;
+  // console.log("gapi_id-token ==", id_token);
+        var xhr = new XMLHttpRequest();
+       
+      // xhr.open('POST', 'https://yourbackend.example.com/tokensignin');
+      xhr.open('POST', '/api/v1/auth/gapi_login');
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.onload = function() {
+        
+        // console.log('Signed in as:  xhr success ' + xhr.response,res_url = xhr.responseURL);
+      };
+      // xhr.send('idtoken=' + id_token);
+      xhr.send(JSON.stringify({gapi_id_token: id_token}));
+      xhr.onloadend = function (params) {
+        if(xhr.DONE){
+          const {url,message} = JSON.parse( xhr.response)
+          console.log("responce xhr == ", xhr.response , "url ==", url);
+          if (url) {
+            window.location = url;
+          }
+          if (message) {
+            document.getElementById('error_span').innerHTML=`<div class="alart"><p>${message}</p></div>`
+            
+          }
+          signOut();
+        }
+      }
+}
+     </script>
+
+     <!-- logout for google ************************************ -->
+
+     <script>
+       function signOut() {
+         var auth2 = gapi.auth2.getAuthInstance();
+         auth2.signOut().then(function () {
+           console.log('User signed out.');
+         });
+       }
+     </script>
+     <script>
+         
+        
+      try {
+
+        function checkLoginState() {               // Called when a person is finished with the Login Button.
+        FB.getLoginStatus(function(response) {   // See the onlogin handler
+          statusChangeCallback(response);
+        });
+      }
+        
+        window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '455087256201946',
+          cookie     : true,                     // Enable cookies to allow the server to access the session.
+          xfbml      : true,                     // Parse social plugins on this webpage.
+          version    : 'v12.0'           // Use this Graph API version for this call.
+        });
+    
+    
+
+        FB.getLoginStatus(function(response) {   // Called after the JS SDK has been initialized.
+          statusChangeCallback(response);        // Returns the login status.
+        });
+      };
+
+      function statusChangeCallback(response) {  // Called with the results from FB.getLoginStatus().
+        console.log('statusChangeCallback');
+        console.log(response);                   // The current login status of the person.
+        if (response.status === 'connected') {   // Logged into your webpage and   Facebook.
+          testAPI(response);  
+        } else {                                 // Not logged into your webpage or we are unable to tell.
+          // document.getElementById('status').innerHTML = 'Please log ' +
+          //   'into this webpage.';
+          console.log('please login with facebook.')
+        }
+      }
+
+
+     function Fb_logout() {
+       FB.logout((responce)=>{
+         console.log("fb_user get logout", responce );
+        });
+      }
+
+
+        function testAPI(response) {                      // Testing Graph API after login.  See statusChangeCallback() for when this call is made.
+        console.log('Welcome!  Fetching your information.... ');
+        // FB.api('/me', function(response) {
+          // FB.api('/me?fields=name,email,first_name,last_name,middle_name,name_format,picture,short_name',
+      //   function myfunction () {
+      // if (response && !response.error) {
+        /* handle the result */ 
+          // console.log('Successful login for: ' + response.name, response);
+          var xhr = new XMLHttpRequest();
+       xhr.open('POST', '/api/v1/auth/FB_api_login');
+       xhr.setRequestHeader('Content-Type', 'application/json');
+      //  xhr.onload = function() {  };
+       xhr.send(JSON.stringify(response));
+       xhr.onloadend = function () {
+         if(xhr.DONE){
+
+           const {url, message} = JSON.parse(xhr.response)
+          if (url) {
+            window.location = url;
+          }
+          if (message) {
+             document.getElementById('error_span').innerHTML=`<div class="alart"><p>${message}</p></div>`
+           }
+           console.log("responce xhr == ", xhr.response ,"url ==", url);
+           Fb_logout();
+         }
+        xhr.onerror = ()=>{
+          console.log("error errore error error error error")
+        }
+       }
+          // document.getElementById('status').innerHTML =
+          //   'Thanks for logging in, ' + response.name + '!';
+        console.log("new response ==", response)
+    //   }else{
+    //     console.log("new error == ", response);
+    //     if (message) {
+    //          document.getElementById('error_span').innerHTML=`<div class="alart"><p>${massage}</p></div>`
+    //        }
+    //   }
+    // }
+// );
+        // FB.api(,);
+      }
+
+      } catch (error) {
+        console.log("errror ===  = ", error);
+      }
+    
+    </script>
+
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+<!-- <script>
+  document.addEventListener('DOMContentLoaded', (event) => {
+          console.log('check login status');
+          var xhr = new XMLHttpRequest();
+          xhr.open('get', 'check_login');
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.onload = function() {
+        res_url = xhr.responseURL;
+        // console.log('Signed in as:  xhr success ' + xhr.response,xhr.getAllResponseHeaders(),res_url = xhr.responseURL);
+      };
+      // xhr.send('idtoken=' + id_token);
+      xhr.send();
+      xhr.onloadend =()=>{
+        console.log("token sended")
+      }
+  });
+</script> -->
+
+<!-- <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
+</fb:login-button> -->
+
+<!--div id="status"-->
+<!-- </div> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+
+<!--script src="../public/js/login.js"></script-->
+</body>
+</html>

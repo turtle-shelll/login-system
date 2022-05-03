@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>submit-token</title>
+    <link rel="stylesheet" href="../public/css/register.css">
+</head>
+<body>
+    <section>
+        <div class="registration-form">
+            <form action="/api/v1/auth/verified" method="post">
+               
+               
+               
+                <div class="input-area">
+                    <label for="token">submit your token we have sended to yuor given email.</label>
+                    <input type="text" name="token" id="token" required autocomplete="off"
+                    placeholder="verification token">
+                </div>
+
+                <%- include('./massage') %>
+
+                <input type="submit" value="submit">
+            </form>
+           <p>didn't get mail. <a href="/api/v1/auth/sendToken">resend</a></p>
+        </div>
+    </section>
+    
+</body>
+</html>
